@@ -31,12 +31,10 @@ router.get('/questions/:id', async (req, res) => {
 // create one quiz question
 router.post('/questions', async (req, res) => {
     try {
-        const { description } = req.body
-        const { alternatives } = req.body
+        const { question, options, correctOption } = req.body
 
-        const question = await Question.create({
-            description,
-            alternatives
+        const newQuestion = await Question.create({
+            question, options, correctOption
         })
 
         return res.status(201).json(question)
@@ -49,21 +47,21 @@ router.post('/questions', async (req, res) => {
 router.put('/questions/:id', async (req, res) => {
     try {
         const _id = req.params.id 
-        const { description, alternatives } = req.body
+        const { question, options, correctOption } = req.body
 
-        let question = await Question.findOne({_id})
+        let questionExists = await Question.findOne({_id})
 
-        if(!question){
-            question = await Question.create({
-                description,
-                alternatives
+        if (!questionExists){
+            const newQuestion = await Question.create({
+                question, options, correctOption
             })    
-            return res.status(201).json(question)
+            return res.status(201).json(newQuestion)
         }else{
-            question.description = description
-            question.alternatives = alternatives
-            await question.save()
-            return res.status(200).json(question)
+            questionExists.question = question
+            questionExists.options = options
+            questionExists.correctOption = correctOption
+            await questionExists.save()
+            return res.status(200).json(questionExists)
         }
     } catch (error) {
         return res.status(500).json({"error":error})
